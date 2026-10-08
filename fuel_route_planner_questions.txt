@@ -1,0 +1,104 @@
+# Fuel route planner: the questions a reviewer is most likely to ask, one per cue.
+# In GhostCue format (see SCRIPT_FORMAT.md). It sits beside the video script,
+# fuel_route_planner.txt, and does not replace it.
+#
+# Each cue is one question: its title is the question, SAY is the answer, and
+# SHOW is what to have on screen if you want something behind the words.
+#
+#   To answer questions as they come, changing slide yourself:
+#       python ghostcue.py fuel_route_planner_questions.txt --manual
+#       (Ctrl+Alt+X next question, Ctrl+Alt+Z previous)
+#   To record them straight through, by the clock (3 minutes 42 seconds):
+#       python ghostcue.py fuel_route_planner_questions.txt
+#   To see how the script was read:
+#       python ghostcue.py fuel_route_planner_questions.txt --check
+#
+# Every figure was measured on this project, and the file names and line
+# numbers were checked against F:\CODE_LAB\spotter_test on 8 Oct 2026
+# (commit 6d97dac). Each cue's slot is its words at 2.5 a second plus about
+# three seconds. If the screen shows a different number, say what it shows.
+
+[0:00] 1. How is the route calculated?
+SHOW: planner/providers/osrm.py, method route (line 13).
+SAY:
+  I don't calculate the route myself.
+  I make one call to OSRM's public server.
+  It gives back the road geometry and the distance.
+  The start and the finish are looked up in a local table of 32,000 US places.
+  So there's no geocoding call either.
+
+[0:21] 2. How do you know which stations are on the route?
+SHOW: planner/services/stations.py, function stations_along (line 106), then the line closeness = index.vectors[chunk] @ sample_vectors.T (line 148).
+SAY:
+  All 6,600 or so US stations are kept in memory, as numpy arrays.
+  A coarse grid narrows them down to the few hundred near the route.
+  Then one matrix multiplication gives each station's distance from the route, and its mile marker.
+  Anything within five miles counts.
+  That takes about fifteen milliseconds for a cross-country trip.
+  And it needs no database query.
+
+[0:48] 3. The price file has no coordinates. How are stations placed?
+SHOW: README.md, under "How it works": the paragraph that starts "The price file has no coordinates".
+SAY:
+  The price file only gives a town, and an address like I-80, Exit 223.
+  So each station is placed at the centre of its town.
+  Most come from the Census place file.
+  For the 313 stations whose towns the Census doesn't list, I did a one-off OpenStreetMap lookup, and committed the results.
+  That's a few miles off the real exit, and I say so in the limitations.
+
+[1:18] 4. How are the fuel stops chosen?
+SHOW: planner/services/optimizer.py: the docstring at the top, then plan_fuel_stops (line 49).
+SAY:
+  It minimises the fuel bill, plus a fixed cost for every stop.
+  That cost is five dollars by default.
+  When stops are free, a greedy rule is optimal.
+  If a cheaper station is in range, buy just enough to reach it.
+  Otherwise, fill up.
+  With a stop cost, I use dynamic programming, over the station and the fuel on arrival.
+  Both are checked against brute force on random routes.
+
+[1:49] 5. Why is there a cost per stop at all?
+SHOW: Postman, the request "Cheapest possible fuel bill (stop_cost 0)": fuel_stops is 14.
+SAY:
+  Because the cheapest plan isn't one anyone would drive.
+  From New York to Los Angeles it's fourteen stops, to save about three dollars.
+  At five dollars a stop, that becomes seven stops.
+  And the fuel costs less than half a percent more.
+
+[2:09] 6. What is cached?
+SHOW: planner/services/trip.py, function plan_trip (line 272), then the line cached = _cache_get_many([route_key, stops_key]) (line 300).
+SAY:
+  Two things, for an hour, in Redis.
+  The first is the route made ready for planning.
+  That's its line, plus the stations matched to it, about 110 kilobytes.
+  The second is the stops chosen for each set of settings, a kilobyte or two.
+  A repeat reads both in one round trip, and makes no routing call.
+  If I change a setting, the route is reused and only the stops are worked out again.
+
+[2:41] 7. How fast is it, and how many routing calls does it make?
+SHOW: Postman, "meta" at the bottom of a response: routing_api_calls and elapsed_ms.
+SAY:
+  One routing call for a new trip, and none for a repeat.
+  A new cross-country trip takes between a third of a second and a second.
+  Nearly all of that is the routing call.
+  A repeat takes about ten milliseconds.
+  And each plan is three SQL queries, about two milliseconds together.
+
+[3:04] 8. What does the total fuel cost mean?
+SHOW: Postman, "summary" in a response: total_fuel_cost and fuel_used_cost.
+SAY:
+  It's the fuel bought on the way.
+  The vehicle starts with a full tank by default.
+  So there's a second figure, fuel used cost.
+  That one also counts the fuel it set off with.
+  And a request can say it starts with less.
+
+[3:24] 9. What are its limits?
+SHOW: README.md, the "Limitations" section.
+SAY:
+  Station positions are town centres, not exact exits.
+  The detour to reach a station isn't counted.
+  And the public OSRM server routes for cars, and has no uptime guarantee.
+  Those are in the README, with a few more.
+
+[3:42] END

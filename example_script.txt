@@ -1,0 +1,45 @@
+# Example GhostCue script. The format is described in SCRIPT_FORMAT.md.
+# Try it:  python ghostcue.py example_script.txt
+
+[0:00] Introduction
+SHOW: The app open on the login page. Nothing else on screen.
+SAY:
+  Hi, thanks for taking the time to watch.
+  This is a short walkthrough of the demo app I built.
+  I'll sign in, look at the dashboard, and create a new record.
+
+[0:12] Sign in
+DO: Click the email field and type demo@example.com
+DO: Type the password, then click "Sign in".
+SHOW: The dashboard loading.
+SAY:
+  I'll start by signing in with a demo account.
+  Authentication uses a session cookie, so a refresh keeps me logged in.
+NOTE: If the login is slow, keep talking.
+
+[0:28] Dashboard
+SHOW: The three summary cards along the top.
+DO: Move the pointer over the cards, left to right.
+SAY:
+  This is the dashboard.
+  The cards along the top show live totals.
+  They update as soon as the data underneath changes.
+
+[0:42] Create a record
+DO: Click "New" in the top right.
+DO: Fill in the name and amount, then click "Save".
+SHOW: The new row at the top of the table.
+SAY:
+  Now I'll create a new record.
+  The form validates as I type.
+  And when I save, the new row appears straight away, without a page reload.
+
+[1:00] Wrap up
+SHOW: The top of the dashboard.
+SAY:
+  That's the core flow.
+  Sign in, see the dashboard, and create a record.
+  The code and the setup steps are in the repository.
+  Thanks for watching.
+
+[1:12] END

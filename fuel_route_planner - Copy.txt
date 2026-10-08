@@ -1,0 +1,288 @@
+# Fuel route planner: demo video script, in GhostCue format (see SCRIPT_FORMAT.md).
+#
+# Converted from F:\CODE_LAB\spotter_test\VIDEO_SCRIPT.txt. That file still holds
+# everything that is not a cue: the warning about the 5-minute limit, the
+# "Before you record" checklist, "If you run long" and "Things not to say".
+#
+#   Part 1 only, the 5-minute Loom:   python ghostcue.py fuel_route_planner.txt --to 5:00
+#   Part 2 as a video of its own:     python ghostcue.py fuel_route_planner.txt --from 5:00
+#   One 10-minute video:              python ghostcue.py fuel_route_planner.txt
+
+# ===========================================================================
+# PART 1: THE API AND THE CODE (0:00 to 5:00)
+# ===========================================================================
+
+[0:00] Introduction
+SHOW: Postman. The "Fuel route planner" collection open, the request "Plan a route (cross-country)" selected, its Body tab visible.
+SAY:
+  Hi, I'm Hammad, and this is my fuel route planner.
+  You give it a start and a finish in the US.
+  It gives back the route, the cheapest places to stop for fuel, and what the fuel will cost.
+  I'll show it in Postman first, then walk through the code.
+
+[0:20] One request
+SHOW: The request body: {"start": "New York, NY", "finish": "Los Angeles, CA"}
+DO: Click Send as you say the second line. Wait for the response.
+SHOW: The response body. Scroll slowly, stopping at each of these:
+  "summary"  distance_miles, fuel_stops, total_fuel_cost
+  "fuel_stops"  the first entry: name, mile_marker, price_per_gallon, gallons_purchased, cost
+  "route"  the GeoJSON LineString (just let it scroll past)
+  "meta"  routing_api_calls: 1, served_from: "routing provider"
+SAY:
+  So here's New York to Los Angeles.
+  It's one POST, with a start and a finish.
+  At the top is the summary.
+  About 2,800 miles, seven fuel stops, and about 710 dollars of fuel.
+  For every stop, it gives the station, where it is on the route, the price, how much to buy, and the cost.
+  Below that is the route as GeoJSON, so any map can draw it.
+  And in meta, you can see it made exactly one routing call.
+  That's what the brief asked for.
+
+[1:00] The same request again
+DO: Click Send again.
+SHOW: "meta" at the bottom: routing_api_calls: 0, served_from: "plan cache", elapsed_ms (a few milliseconds). Point at Postman's own time as well.
+SAY:
+  Now watch what happens when I send it again.
+  This time there's no routing call at all.
+  The answer comes straight from the cache, in a few milliseconds.
+  And if I change a setting for the same trip, it still reuses the route.
+
+[1:20] Why there is a cost per stop
+SHOW: The request "Cheapest possible fuel bill (stop_cost 0)".
+DO: Click Send.
+SHOW: "summary": fuel_stops: 14, total_fuel_cost: about 706.91.
+SAY:
+  There's one decision I want to point out.
+  If I ask for the absolute cheapest fuel bill, I get this.
+  Fourteen stops, just to save about three dollars.
+  Nobody wants to drive like that.
+  So by default, every stop counts as costing five dollars.
+  That halves the stops, for less than half a percent more fuel.
+
+[1:45] An error
+SHOW: The request "Error: ambiguous place".
+DO: Click Send.
+SHOW: The response: {"error": {"code": "location_not_found", "message": ...}}
+SAY:
+  Errors always come back in the same shape.
+  Here I typed Springfield with no state, and it lists the ones it found.
+
+[1:55] The map
+DO: Go back to the first response ("Plan a route (cross-country)"), find "map_url" at the very bottom, and open it in the browser.
+SHOW: The map page: the blue route, the numbered stops, the chequered flag at Los Angeles, the dark band with the fuel bill.
+SAY:
+  The brief also asks for a map.
+  Every response has a map link.
+  When I open it, I get the same plan drawn on a map.
+  The page doesn't plan anything itself. It just calls the same API.
+
+[2:15] The view
+SHOW: planner/views.py, class RoutePlanView, method _respond (line 47). Put the cursor on the three steps as you name them:
+  RouteRequestSerializer(...)   plan_trip(...)   TripSerializer(...)
+SAY:
+  Okay, now the code.
+  It's Django 6.1 with REST framework, and the view is very thin.
+  One serializer checks the request, plan_trip does the work, and another serializer builds the JSON.
+
+[2:30] The request, end to end
+SHOW: planner/services/trip.py, function plan_trip (line 253). Scroll through it once, top to bottom, pausing on:
+  resolve_location(start_text)
+  cached = _cache_get_many([route_key, stops_key])  (line 281)
+  _fetch_ready_route(route_key, provider, start, finish, ...)  (line 287)
+  _choose_stops(ready, ...)  (line 293)
+  Then jump up to _fetch_ready_route (line 173) for the last sentence.
+SAY:
+  plan_trip is where the whole request happens.
+  It looks up the two place names in a local table of US towns, so there's no geocoding call.
+  Then it reads two things from the cache in one go.
+  The route, already matched to its stations.
+  And the stops for these exact settings.
+  If only the stops are missing, it just works them out again.
+  It calls the routing provider only when the route itself is missing, and only once.
+  And if several requests want the same new route at once, one fetches it and the others wait.
+
+[3:10] The one external call
+SHOW: planner/providers/osrm.py, class OSRMProvider, method route (line 13). Point at the params: overview full, alternatives false.
+SAY:
+  And this is that one call.
+  It asks OSRM's public server for the full route.
+  OpenRouteService sits behind the same interface, and I can switch to it without a deploy.
+NOTE: [PROVIDER] If you recorded on Docker, the first two lines should name OpenRouteService and show planner/providers/openrouteservice.py.
+
+[3:22] Which stations are on the route
+SHOW: planner/services/stations.py. Start on the docstring at the very top, then scroll to stations_along (line 106) and stop on the line
+  closeness = index.vectors[chunk] @ sample_vectors.T
+SAY:
+  Next, which stations are on the route.
+  The price file has about 6,600 US stations, and I use all of them.
+  It has no coordinates, so each station is placed at the centre of its town.
+  They're kept in memory as numpy arrays.
+  One matrix multiplication gives every station's distance from the route.
+  That takes about fifteen milliseconds for a cross-country trip, with no database query.
+
+[3:50] The optimizer
+SHOW: planner/services/optimizer.py. Start on the docstring at the top (the "fuel bill + stop_cost x number of stops" line), then plan_fuel_stops (line 49), then _cheapest_with_stop_cost (line 130).
+SAY:
+  And this is the optimizer.
+  It minimises the fuel bill, plus the stop cost for every stop.
+  When stops are free, it's a simple greedy rule.
+  If there's a cheaper station in range, buy just enough to reach it.
+  If not, fill up.
+  When stops have a cost, I use dynamic programming, over the station you're at and the fuel you arrive with.
+  Both are tested against brute force on random routes.
+
+[4:25] Tests, stack, and how it was built
+SHOW: The terminal with "Ran 197 tests ... OK". Then docs/DECISIONS.md, scrolled to the list of headings under "3. Decisions".
+SAY:
+  There are almost 200 tests, and twenty of them drive the page in a real browser.
+  It all runs on PostgreSQL and Redis with Docker Compose.
+  One last thing.
+  I built this with Claude as a pair.
+  The design decisions were mine, and each one is written down in the decision log, with the options I had.
+  Thanks for watching.
+NOTE: If this is the whole video, stop here. If you are going on to PART 2, say this in place of "Thanks for watching":
+  That's the short version.
+  If you'd like more, the rest of this video is the page and the production side.
+
+# ===========================================================================
+# PART 2: THE PAGE, THE SETTINGS, AND THE PRODUCTION SIDE (5:00 to 10:00)
+# ===========================================================================
+
+[5:00] The page asks two questions
+SHOW: The browser on the site's front page with no trip: the dialog "Where are you right now?".
+DO: Click the example chip "Coast to coast" when you say "like this one".
+SHOW: The map with the route, and the dark band under it.
+SAY:
+  I built this page for whoever is reviewing, so you can try things without typing anything.
+  It asks where you are, and where you're headed.
+  Or you can just pick an example, like this one.
+  The dark band is the answer.
+  The fuel bill, the stops, the miles and the gallons.
+
+[5:30] The two counters
+SHOW: The "Cost per stop" counter in the dark band.
+DO: Click its right arrow twice ($5 to $7). Then put the pointer over "Starting fuel" and scroll down two notches (500 to 400 miles).
+SHOW: The stops on the map changing, and the sentence under the numbers ("Same route as before, so no routing call...").
+SAY:
+  These two counters let you play with the plan.
+  You can click the arrows, or just scroll over the number.
+  Each time, the trip is planned again.
+  And this line tells you where the answer came from.
+  Here, the route was reused and only the stops were worked out again.
+
+# The original gives "The bottom drawer" one timestamp (6:00, 65 seconds) for five
+# steps. It is split into one cue per step here so each step's DO, SHOW and SAY
+# stay together. The times 6:17, 6:23, 6:42 and 6:57 are ESTIMATES, shared out by
+# how much there is to say and do. Adjust them after a rehearsal.
+
+[6:00] The bottom drawer: fuel timeline
+DO: Click "Fuel timeline".
+SHOW: The chart. Move the pointer over a numbered stop on the chart so the same stop lights up on the map.
+SAY:
+  The tabs along the bottom open a drawer.
+  This one shows the fuel in the tank over the whole trip.
+  If I point at a stop here, it lights up on the map too.
+
+[6:17] The bottom drawer: fuel plan
+DO: Click "Fuel plan".
+SHOW: The table of stops.
+SAY: This is the same plan as a table.
+
+[6:23] The bottom drawer: stops against cost
+DO: Click "Stops against cost". Move the pointer over the row above the selected one, then the row below.
+SHOW: The five rows, and on the map the other stops fading as you point.
+SAY:
+  This one compares my cost per stop with the settings on either side.
+  When I point at a row, the map shows that plan.
+  So you can see the trade. One stop fewer, for a few dollars more.
+
+[6:42] The bottom drawer: GeoJSON
+DO: Click "GeoJSON", click Copy, switch to the geojson.io tab, click in the JSON pane, select all, paste.
+SHOW: geojson.io drawing the route and the numbered stops.
+SAY:
+  And this is the whole plan as GeoJSON.
+  I can copy it and paste it into any map tool.
+NOTE: Rehearse this paste once before recording. If geojson.io is slow or looks wrong, cut the paste and just show the tab and the Copy button.
+
+[6:57] The bottom drawer: API call
+DO: Back in the app, click "API call".
+SHOW: The curl command and the response.
+SAY: And this tab shows the exact request behind whatever is on screen.
+
+[7:05] What it chose from
+DO: Click the open tab again to close the drawer. Zoom the map in three steps with the + button beside "Change trip", on a busy stretch such as Iowa. Put the pointer on an orange dot.
+SHOW: The orange dots beside the route, and the tooltip listing a town's stations with their prices.
+SAY:
+  Let me zoom in.
+  The orange dots are towns with stations the planner looked at and didn't pick.
+  That's about 350 stations on this trip.
+  If I point at one, I can see the prices it was choosing between.
+
+# Split from one 50-second section in the original; 8:10 is an ESTIMATE.
+
+[7:30] Settings that change without a deploy
+DO: Click the gear button, top right.
+SHOW: The settings drawer beside the page.
+DO: Click "Sign in to edit". Username admin, password fuelroute-demo. Change "Cost per stop" to 8. Click "Save changes".
+SHOW: The plan on the map being redone as the save completes.
+DO: Change "Routing provider" to OpenRouteService so the API key box appears. Do not save. Close the drawer.
+SAY:
+  The gear opens the server settings.
+  The vehicle's range, the fuel economy, the cost per stop and the routing provider all live in a database table.
+  So I can change them without a deploy.
+  Anyone can read them, but to change them you have to sign in.
+  When I save, the plan on screen is redone straight away.
+  And if I pick a provider that needs an API key, it asks for the key right here.
+
+[8:10] Settings: the key is encrypted
+SHOW: planner/models.py, class ProviderCredential (line 92), then planner/crypto.py, class EncryptedTextField (line 38).
+SAY:
+  That key is encrypted in the database.
+  It's never sent back, not even to an admin.
+
+[8:20] The same endpoint, done the REST framework way
+SHOW: planner/views.py, class SettingsView (line 63): the two class attributes and the short patch method. Then planner/serializers.py, class SettingsChangeSerializer, method validate (line 223).
+SAY:
+  The endpoint behind that drawer is only a few lines.
+  A permission class decides who's allowed to write.
+  This serializer decides what a change can contain.
+  And if any part is invalid, nothing gets saved.
+
+# Split from one 40-second section in the original; 8:52 is an ESTIMATE.
+
+[8:40] The stack
+SHOW: docker-compose.yml: the three services (db, cache, web) and the health checks.
+SAY:
+  Docker Compose runs all of this on PostgreSQL and Redis, behind gunicorn.
+  The health check only passes once the station data is loaded.
+
+[8:52] Checking my claims
+DO: In the browser, click the green tab on the right edge of the page. Click "History", then "Switch" on the newest "/api/v1/route/" row, then click "SQL".
+SHOW: The SQL panel: three queries and their total time.
+SAY:
+  I also left Django Debug Toolbar on in this stack, so you can check what I've been saying.
+  It follows the API calls the page makes.
+  This plan took three queries, about two milliseconds in total.
+  That's the settings and the two places.
+  The stations need no query at all, because they're matched in memory.
+NOTE: On the local run the toolbar only appears if the server was started with DJANGO_DEBUG_TOOLBAR=true. The one on port 8002 was.
+
+[9:20] Tests
+SHOW: planner/tests/test_optimizer.py, the test test_matches_brute_force_on_random_routes (line 139). Then planner/tests/test_page.py, class HostileTextTests (near the end).
+SAY:
+  Two tests I'd like to point at.
+  This one runs the optimizer against brute force on random routes.
+  And this one opens the page in a real browser, with station names that try to be HTML.
+  It checks they stay as plain text.
+  There's also a CI workflow that runs the linter and all the tests.
+
+[9:45] What it does not do
+SHOW: README.md, the "Limitations" section.
+SAY:
+  And to be honest about what it doesn't do.
+  A station is placed at the centre of its town, not at its exact exit.
+  And the detour to reach it isn't counted.
+  Those, and a few more, are in the README.
+  Thanks for watching.
+
+[10:00] END

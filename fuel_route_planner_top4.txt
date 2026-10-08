@@ -1,0 +1,64 @@
+# Fuel route planner: the four questions to be ready for first, one per cue.
+# In GhostCue format (see SCRIPT_FORMAT.md). A shorter cut of
+# fuel_route_planner_questions.txt, which has all nine; the answers are the same.
+#
+# Why these four: the brief asks for cost-optimal stops, quick results and as few
+# routing calls as possible, so those are what a reviewer checks first.
+#   1. How the route is calculated      one routing call, nothing else external
+#   2. How the fuel stops are chosen    the "optimal" the brief asks for
+#   3. What is cached                   why a repeat is quick
+#   4. How fast, and how many calls     the brief's two explicit requirements
+#
+#   To answer questions as they come, changing slide yourself:
+#       python ghostcue.py fuel_route_planner_top4.txt --manual
+#       (Ctrl+Alt+X next question, Ctrl+Alt+Z previous)
+#   To record them straight through, by the clock (1 minute 47 seconds):
+#       python ghostcue.py fuel_route_planner_top4.txt
+#   To see how the script was read:
+#       python ghostcue.py fuel_route_planner_top4.txt --check
+#
+# Every figure was measured on this project, and the file names and line
+# numbers were checked against F:\CODE_LAB\spotter_test on 8 Oct 2026
+# (commit 6d97dac). Each cue's slot is its words at 2.5 a second plus about
+# three seconds. If the screen shows a different number, say what it shows.
+
+[0:00] 1. How is the route calculated?
+SHOW: planner/providers/osrm.py, method route (line 13).
+SAY:
+  I don't calculate the route myself.
+  I make one call to OSRM's public server.
+  It gives back the road geometry and the distance.
+  The start and the finish are looked up in a local table of 32,000 US places.
+  So there's no geocoding call either.
+
+[0:21] 2. How are the fuel stops chosen?
+SHOW: planner/services/optimizer.py: the docstring at the top, then plan_fuel_stops (line 49).
+SAY:
+  It minimises the fuel bill, plus a fixed cost for every stop.
+  That cost is five dollars by default.
+  When stops are free, a greedy rule is optimal.
+  If a cheaper station is in range, buy just enough to reach it.
+  Otherwise, fill up.
+  With a stop cost, I use dynamic programming, over the station and the fuel on arrival.
+  Both are checked against brute force on random routes.
+
+[0:52] 3. What is cached?
+SHOW: planner/services/trip.py, function plan_trip (line 272), then the line cached = _cache_get_many([route_key, stops_key]) (line 300).
+SAY:
+  Two things, for an hour, in Redis.
+  The first is the route made ready for planning.
+  That's its line, plus the stations matched to it, about 110 kilobytes.
+  The second is the stops chosen for each set of settings, a kilobyte or two.
+  A repeat reads both in one round trip, and makes no routing call.
+  If I change a setting, the route is reused and only the stops are worked out again.
+
+[1:24] 4. How fast is it, and how many routing calls does it make?
+SHOW: Postman, "meta" at the bottom of a response: routing_api_calls and elapsed_ms.
+SAY:
+  One routing call for a new trip, and none for a repeat.
+  A new cross-country trip takes between a third of a second and a second.
+  Nearly all of that is the routing call.
+  A repeat takes about ten milliseconds.
+  And each plan is three SQL queries, about two milliseconds together.
+
+[1:47] END
