@@ -208,89 +208,43 @@ section h3 { font-size: 18px; margin: 0 0 6px; }
 .mk-foot { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 4px 4px 16px; white-space: nowrap; }
 .mk-grip { width: 12px; height: 12px; background: radial-gradient(circle, #4b5262 1.2px, transparent 1.6px) 0 0 / 4px 4px; }
 
-/* Numbered pins on the drawing, matched by the key below it. */
-.mock .ok, .mk-note, .mk-capture, .mk-buttons, .mk-body p, .mk-heard span, .mk-foot span { position: relative; }
-.pin {
-  position: absolute;
-  left: -40px;  /* lines of the answer: out in the margin, beside the line */
-  top: 50%;
-  transform: translateY(-50%);
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #2f6fed;
-  color: #fff;
-  font: normal 600 11px/1 var(--sans);
-  text-indent: 0;
-  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.28);
-  z-index: 2;
+/* The drawing's parts, always outlined in yellow. The one chosen, by hovering, tapping or tabbing
+   to it, is brighter, and its line of the key shows below. */
+.part {
+  outline: 1px dashed rgba(255, 200, 87, 0.45);
+  outline-offset: 3px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: outline-color 0.15s, background-color 0.15s;
 }
-.mk-head .pin, .mk-grip .pin { left: 0; top: -26px; transform: none; }  /* the header's parts: above them */
-.mk-grip .pin { left: -4px; top: -28px; }
+.part:hover, .part:focus-visible, .part.on {
+  outline: 2px solid var(--amber);
+  background-color: rgba(255, 200, 87, 0.08);
+}
 
-.key {
-  list-style: none;
-  counter-reset: key;
-  margin: 28px 0 0;
-  padding: 0;
-  columns: 2;
-  column-gap: 40px;
-}
-.key li {
-  counter-increment: key;
-  position: relative;
-  padding-left: 34px;
-  margin-bottom: 12px;
-  color: var(--dim);
-  font-size: 15px;
-  break-inside: avoid;
-}
-.key li::before {
-  content: counter(key);
-  position: absolute;
-  left: 0;
-  top: 1px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #2f6fed;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-}
+.key { list-style: none; margin: 28px 0 0; padding: 0; columns: 2; column-gap: 40px; }
+.key li { margin-bottom: 12px; color: var(--dim); font-size: 15px; break-inside: avoid; }
 .key b { color: var(--white); font-weight: 600; }
 
-/* With script: the pins are buttons, and the key shows only the chosen one's line. */
-.pin { border: 0; padding: 0; cursor: pointer; transition: scale 0.15s, background-color 0.15s, color 0.15s, box-shadow 0.15s; }
-.pin:hover { scale: 1.15; }
-.pin:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
-.pin.on { background: var(--white); color: #2f6fed; box-shadow: 0 0 0 4px rgba(124, 196, 255, 0.45); scale: 1.1; }
-.lit { outline: 1px dashed rgba(124, 196, 255, 0.7); outline-offset: 4px; border-radius: 3px; }
-
-.key-hint { display: none; }
-.pins-live .intro > p.key-hint { display: block; margin: 26px 0 10px; color: var(--dim); font-size: 14px; }
-.pins-live .key {
+/* With script: one line at a time, large and yellow, fading in. */
+.parts-live .key {
   columns: 1;
-  margin-top: 0;
-  min-height: 84px;  /* the longest line, so the page does not jump between them */
-  padding: 18px 22px;
-  border: 1px solid var(--line);
+  margin-top: 26px;
+  min-height: 104px;  /* the longest line, so the page does not jump between them */
+  padding: 22px 26px;
+  border: 1px solid rgba(255, 200, 87, 0.35);
   border-radius: 12px;
   background: var(--panel);
 }
-.pins-live .key li { display: none; margin: 0; font-size: 16px; }
-.pins-live .key li::before { content: attr(data-n); }
-.pins-live .key li.on { display: block; animation: key-in 0.28s ease-out; }
+.parts-live .key li { display: none; margin: 0; color: var(--amber); font-size: 21px; line-height: 1.5; }
+.parts-live .key li b { color: var(--amber); font-weight: 700; }
+.parts-live .key li.on { display: block; animation: key-in 0.28s ease-out; }
 @keyframes key-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pins-live .key li.on { animation: none; }
+  .parts-live .key li.on { animation: none; }
 }
 
 .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 40px; }
