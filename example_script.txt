@@ -1,5 +1,5 @@
 # Example GhostCue script. The format is described in SCRIPT_FORMAT.md.
-# Try it:  python ghostcue.py example_script.txt
+# Try it:  python -m ghostcue prompter example_script.txt
 
 [0:00] Introduction
 SHOW: The app open on the login page. Nothing else on screen.

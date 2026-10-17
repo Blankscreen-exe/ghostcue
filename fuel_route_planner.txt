@@ -4,10 +4,10 @@
 # the checklist before recording, what to cut, what not to say) is in comments
 # like these, before the first cue and after the END line. GhostCue ignores them.
 #
-#   Part 1 only, the 5-minute Loom:   python ghostcue.py fuel_route_planner.txt --to 5:00
-#   Part 2 as a video of its own:     python ghostcue.py fuel_route_planner.txt --from 5:00
-#   One 10-minute video:              python ghostcue.py fuel_route_planner.txt
-#   See how the script was read:      python ghostcue.py fuel_route_planner.txt --check
+#   Part 1 only, the 5-minute Loom:   python -m ghostcue prompter fuel_route_planner.txt --to 5:00
+#   Part 2 as a video of its own:     python -m ghostcue prompter fuel_route_planner.txt --from 5:00
+#   One 10-minute video:              python -m ghostcue prompter fuel_route_planner.txt
+#   See how the script was read:      python -m ghostcue prompter fuel_route_planner.txt --check
 #
 # The file names, line numbers, on-screen labels and figures below were checked
 # against F:\CODE_LAB\spotter_test on 8 Oct 2026 (commit 6d97dac). Line numbers

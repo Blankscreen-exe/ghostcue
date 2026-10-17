@@ -1,18 +1,113 @@
 # GhostCue
 
-A teleprompter overlay for recording demo videos. It shows what to show, what
-to do and what to say, cue by cue, in an always-on-top window that you can see
-on your monitor but that screen recorders, screenshots and screen shares cannot.
+Two tools for showing software on a call, both in a window that you can see on
+your monitor but that screen shares, recordings and screenshots cannot:
 
-Needs Windows 10 version 2004 or later and Python 3.10+. No packages to install.
+- **The assistant** listens to a live demo call and tells you what to say when
+  the client asks a question.
+- **The teleprompter** walks you through a timed script while you record a demo
+  video.
 
-## Run
+Needs Windows 10 version 2004 or later, Python 3.10+, and for the assistant
+[Claude Code](https://claude.com/claude-code), installed and signed in.
+
+## Install
 
 ```
-python ghostcue.py my_script.txt --check   # print how the script was read, no window
-python ghostcue.py my_script.txt           # open the overlay
-python ghostcue.py                         # pick the script in a file dialog
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
 ```
+
+## The assistant
+
+Double-click `GhostCue.bat`, or run `.venv\Scripts\python -m ghostcue`. It lives
+in the system tray; click the icon for the settings window, right-click for the
+menu.
+
+1. **Context**: write the brief. What you are showing, who the client is, what
+   they care about, what you must not promise.
+2. **Knowledge**: add FAQs, pricing or specification files the answers should
+   draw on.
+3. **Audio**: play a sound and speak, and check that both level bars move.
+4. Press **Start listening** before the call. The first start takes about ten
+   seconds while Claude Code starts, and downloads the speech model once.
+
+During the call the overlay shows the client's question, one sentence to say,
+and up to three supporting points. **Answer length**, under Assistant, makes
+every answer longer, up to a full explanation; Ctrl+Alt+E does it for one
+question. A question about a set of things (types, steps, strategies) gets
+every member whatever the length, and a request for code gets the code. An answer starts to appear about two to four
+seconds after the client stops speaking. A point marked `Not in brief:` means
+your material did not cover the question, and the sentence above it is a holding
+answer rather than a fact.
+
+| Ctrl+Alt + | Action |
+|------------|--------|
+| A | answer now, whatever the client last said |
+| D | dig deeper: search the project folder set under Knowledge (several seconds slower) |
+| T | type the client's question yourself, when it was misheard; Enter asks, Esc cancels |
+| E | explain more: answer the last question again, in full |
+| S | show / hide the overlay |
+| L | start / stop listening |
+
+### How it works
+
+- **Client audio** is whatever your speakers or headphones play, captured with
+  WASAPI loopback. **Your audio** is the microphone. Wear headphones; without
+  them the microphone hears the client too, and GhostCue drops microphone speech
+  that overlaps the client's.
+- **Speech is transcribed on this computer** with faster-whisper. For English, `base`
+  takes about 0.7 seconds a sentence on a six-core CPU; `small` is more
+  accurate but takes 2 to 3 seconds without a GPU.
+- **Answers come from your own Claude Code**, kept running for the length of the
+  call so that each answer starts in under a second. The transcript is sent to
+  Anthropic to be answered, as with any use of Claude Code, and counts towards
+  your plan's usage. No Claude Code session is saved.
+- **Settings and call transcripts** are kept in `%APPDATA%\GhostCue`. Turn
+  transcripts off under Assistant.
+
+### Urdu-speaking clients
+
+Set **Call language**, at the top of the Context page or on the tray menu, to
+Urdu or to Mix (Urdu + English). Mix checks each sentence for being plain
+English first. Either switches the speech model to `small` and the answers to the client's
+language, with Urdu written in Roman letters ("Hum ne Python isliye select
+kiya…"). English sentences on the same call are still read as English.
+
+Urdu recognition is much rougher than English: on a test recording about half
+to four in five questions were understood, at 2.5 to 3.5 seconds a sentence. So
+on these calls the overlay's first line, `ASKED`, shows the question as the
+assistant understood it. Read it before you read the answer; if it is not what
+the client asked, the answer is to the wrong question: press Ctrl+Alt+T and type
+what they asked.
+
+The `large-v3-turbo` speech model is far more accurate for Urdu but needs an
+NVIDIA graphics card to be fast enough. It is used automatically when one is
+present with its CUDA libraries installed; that path has not been tested.
+
+### Before a real call
+
+- Share your screen in a test meeting and confirm on a second device that the
+  overlay is absent. Its header reads `hidden from capture` while the exclusion
+  is active and a red `VISIBLE TO SCREEN SHARE` if it could not be applied.
+- The overlay is hidden but your mouse pointer is not, so use the hotkeys.
+- Speech recognition mishears names. List yours under Context, in "Names and
+  jargon".
+- Transcribing a call may require telling the people on it, depending on where
+  they are.
+
+`python -m ghostcue listen` prints what is heard on each side, with the delay,
+to check the audio without starting a call.
+
+## The teleprompter
+
+```
+python -m ghostcue prompter my_script.txt --check   # print how the script was read, no window
+python -m ghostcue prompter my_script.txt           # open the overlay
+python -m ghostcue prompter                         # pick the script in a file dialog
+```
+
+It is also on the tray menu. It uses only the Python standard library.
 
 | Option | Effect |
 |--------|--------|
@@ -23,10 +118,8 @@ python ghostcue.py                         # pick the script in a file dialog
 | `--opacity 0-1` | window opacity (default 0.92) |
 | `--geometry WxH+X+Y` | window size and position in pixels |
 
-## Script format
-
 Scripts are plain text in one fixed format, specified in
-[SCRIPT_FORMAT.md](SCRIPT_FORMAT.md). In short:
+[SCRIPT_FORMAT.md](SCRIPT_FORMAT.md); `example_script.txt` is a complete sample.
 
 ```
 [0:12] Sign in
@@ -38,32 +131,12 @@ SAY:
 NOTE: If the login is slow, keep talking.
 ```
 
-`example_script.txt` is a complete sample. A script that breaks the format is
-rejected with the line number of each problem.
+The left side shows the cue's directions (`SHOW` blue, `DO` amber, `NOTE` grey)
+and the right side the words to say. Drag the window to move it and its
+bottom-right corner to resize it. It never takes keyboard focus.
 
-## The overlay
-
-The left side shows the cue's directions: `SHOW` in blue, `DO` in amber, `NOTE`
-in grey. The right side shows the words to say, one sentence per line. The
-header has the clock, the cue number and title, and a countdown to the next cue;
-the bottom line previews the next cue.
-
-The header also has `‹ prev`, `start` / `pause` and `next ›` buttons that do the
-same as the hotkeys. They are a fallback: the buttons are hidden from the
-recording but your pointer is not, so prefer the hotkeys during a take.
-
-Drag the window anywhere to move it; drag the bottom-right corner to resize.
-It never takes keyboard focus from the app you are demoing. If a cue is too long
-for the window it scrolls over the cue's duration; turning the mouse wheel over
-either side scrolls it by hand instead, until the next cue.
-
-## Hotkeys
-
-They work while any app has focus. All use **Ctrl+Alt**. The three you need
-during a take are under the left hand, so the other hand can stay on the mouse:
-
-| Key | Action |
-|-----|--------|
+| Ctrl+Alt + | Action |
+|------------|--------|
 | Space | start / pause the clock |
 | X / Z | next / previous cue |
 | R | restart from the first cue |
@@ -72,20 +145,6 @@ during a take are under the left hand, so the other hand can stay on the mouse:
 | H | hide / show the overlay |
 | Q | quit |
 
-**Auto** (default): cues change at their timestamps. Next/Previous also move the
-clock to that cue, so if you fall behind, one press puts you back in sync.
-
-**Manual** (`--manual` or Ctrl+Alt+M): cues change only when you press
-Next/Previous. The clock keeps running, and the countdown turns red and shows
-"over by" when you are behind the script's timing.
-
-## Before the real take
-
-- Record five seconds with your actual recorder and play it back, to confirm the
-  overlay is absent. The header shows `hidden from capture` while the exclusion
-  is active and a red `VISIBLE TO RECORDERS` if it could not be applied.
-- The overlay is hidden, but your mouse pointer is not: moving the pointer over
-  the overlay shows up in the video as the pointer moving over whatever is behind it.
-- Minimise the terminal you launched it from; that window is recorded like any other.
-- The hotkeys are global, so other apps do not receive those key combinations
-  while GhostCue is running.
+**Auto** (default): cues change at their timestamps, and Next/Previous move the
+clock with them. **Manual**: cues change only when you press Next/Previous, and
+the countdown turns red when you are behind the script's timing.

@@ -5,7 +5,7 @@ shows the current cue in an always-on-top window. The window is excluded from
 screen capture, so it is visible on the monitor but absent from recordings,
 screenshots and screen shares. Windows 10 version 2004 or later.
 
-    python ghostcue.py script.txt
+    python -m ghostcue prompter script.txt
 
 The script format is specified in SCRIPT_FORMAT.md.
 """
@@ -13,18 +13,18 @@ The script format is specified in SCRIPT_FORMAT.md.
 import argparse
 import ctypes
 import math
-import queue
 import re
 import signal
 import sys
-import threading
 import time
 import tkinter as tk
-from ctypes import wintypes
 from dataclasses import dataclass, field
 from pathlib import Path
 from tkinter import filedialog
 from tkinter import font as tkfont
+
+from .win32 import (GA_ROOT, GWL_EXSTYLE, SW_HIDE, SW_SHOWNOACTIVATE, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+                    Hotkeys, exclude_from_capture, get_window_long, set_window_long, user32)
 
 # ---------------------------------------------------------------- script ----
 
@@ -157,16 +157,7 @@ def describe(name, cues, warnings):
         print(f"\nWARNING: {warning}")
 
 
-# ----------------------------------------------------------------- win32 ----
-
-WDA_EXCLUDEFROMCAPTURE = 0x11  # Windows 10 2004+: on the monitor, absent from every capture
-GA_ROOT = 2
-GWL_EXSTYLE = -20
-WS_EX_TOOLWINDOW = 0x80        # no taskbar button, not listed in Alt+Tab
-WS_EX_NOACTIVATE = 0x08000000  # clicking the overlay never takes focus from the app being demoed
-SW_HIDE, SW_SHOWNOACTIVATE = 0, 4
-WM_HOTKEY = 0x0312
-MOD_ALT, MOD_CONTROL, MOD_NOREPEAT = 0x1, 0x2, 0x4000
+# --------------------------------------------------------------- hotkeys ----
 
 # Global hotkeys, all pressed with Ctrl+Alt: (virtual-key code, key name, action, hint)
 # Start/pause and next/previous sit under the left hand, so the mouse hand stays on the mouse.
@@ -181,42 +172,6 @@ HOTKEYS = (
     (0x48, "H", "hide", "hide"),
     (0x51, "Q", "quit", "quit"),
 )
-
-user32 = ctypes.WinDLL("user32", use_last_error=True)
-user32.GetAncestor.restype = wintypes.HWND
-user32.GetAncestor.argtypes = (wintypes.HWND, wintypes.UINT)
-user32.SetWindowDisplayAffinity.argtypes = (wintypes.HWND, wintypes.DWORD)
-user32.GetWindowDisplayAffinity.argtypes = (wintypes.HWND, ctypes.POINTER(wintypes.DWORD))
-user32.ShowWindow.argtypes = (wintypes.HWND, ctypes.c_int)
-user32.GetForegroundWindow.restype = wintypes.HWND
-user32.SetForegroundWindow.argtypes = (wintypes.HWND,)
-user32.RegisterHotKey.argtypes = (wintypes.HWND, ctypes.c_int, wintypes.UINT, wintypes.UINT)
-user32.GetMessageW.argtypes = (ctypes.POINTER(wintypes.MSG), wintypes.HWND, wintypes.UINT, wintypes.UINT)
-get_window_long = getattr(user32, "GetWindowLongPtrW", user32.GetWindowLongW)
-set_window_long = getattr(user32, "SetWindowLongPtrW", user32.SetWindowLongW)
-get_window_long.restype = set_window_long.restype = ctypes.c_ssize_t
-get_window_long.argtypes = (wintypes.HWND, ctypes.c_int)
-set_window_long.argtypes = (wintypes.HWND, ctypes.c_int, ctypes.c_ssize_t)
-
-
-class Hotkeys(threading.Thread):
-    """Listens for the global hotkeys on its own message loop and queues their actions."""
-
-    def __init__(self):
-        super().__init__(daemon=True)
-        self.pressed = queue.SimpleQueue()
-        self.failed = []  # key names another program already owns
-        self.ready = threading.Event()
-
-    def run(self):
-        for i, (vk, name, _action, _hint) in enumerate(HOTKEYS):
-            if not user32.RegisterHotKey(None, i, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, vk):
-                self.failed.append(name)
-        self.ready.set()
-        msg = wintypes.MSG()
-        while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
-            if msg.message == WM_HOTKEY:
-                self.pressed.put(HOTKEYS[msg.wParam][2])
 
 
 # --------------------------------------------------------------- overlay ----
@@ -244,7 +199,7 @@ class Prompter:
         self.hidden = False
         self.closed = False
 
-        self.hotkeys = Hotkeys()
+        self.hotkeys = Hotkeys(HOTKEYS)
         self.hotkeys.start()
         self.hotkeys.ready.wait(2)
         signal.signal(signal.SIGINT, lambda *_: self.hotkeys.pressed.put("quit"))
@@ -517,12 +472,7 @@ class Prompter:
 
         Checked on every tick, so the exclusion is put back if Tk ever rebuilds the window.
         """
-        hwnd = self.hwnd()
-        affinity = wintypes.DWORD()
-        user32.GetWindowDisplayAffinity(hwnd, ctypes.byref(affinity))
-        if affinity.value == WDA_EXCLUDEFROMCAPTURE:
-            return True
-        return bool(user32.SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE))
+        return exclude_from_capture(self.hwnd())
 
     def wheel(self, event):
         """Scroll the pane under the pointer by hand; it stops auto-scrolling until the cue changes."""

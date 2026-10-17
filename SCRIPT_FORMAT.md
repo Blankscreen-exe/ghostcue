@@ -59,7 +59,7 @@ NOTE: If the login is slow, keep talking.
 
 Nothing else is allowed. Text before the first cue, a line inside a cue before
 any label, a time that does not increase, or anything after `END` is an error,
-and GhostCue names the line. Run `python ghostcue.py script.txt --check` to see
+and GhostCue names the line. Run `python -m ghostcue prompter script.txt --check` to see
 exactly how a script was read.
 
 ## Writing a script that works well on the overlay
@@ -84,6 +84,6 @@ A script can cover more than one video. `--from` and `--to` pick out a stretch
 of it and re-time it to start at 0:00:
 
 ```
-python ghostcue.py script.txt --to 5:00      # only the cues before 5:00
-python ghostcue.py script.txt --from 5:00    # only the cues from 5:00 on, shown as 0:00 onward
+python -m ghostcue prompter script.txt --to 5:00      # only the cues before 5:00
+python -m ghostcue prompter script.txt --from 5:00    # only the cues from 5:00 on, shown as 0:00 onward
 ```

@@ -10,12 +10,12 @@
 #   4. How fast, and how many calls     the brief's two explicit requirements
 #
 #   To answer questions as they come, changing slide yourself:
-#       python ghostcue.py fuel_route_planner_top4.txt --manual
+#       python -m ghostcue prompter fuel_route_planner_top4.txt --manual
 #       (Ctrl+Alt+X next question, Ctrl+Alt+Z previous)
 #   To record them straight through, by the clock (1 minute 47 seconds):
-#       python ghostcue.py fuel_route_planner_top4.txt
+#       python -m ghostcue prompter fuel_route_planner_top4.txt
 #   To see how the script was read:
-#       python ghostcue.py fuel_route_planner_top4.txt --check
+#       python -m ghostcue prompter fuel_route_planner_top4.txt --check
 #
 # Every figure was measured on this project, and the file names and line
 # numbers were checked against F:\CODE_LAB\spotter_test on 8 Oct 2026

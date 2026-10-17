@@ -4,9 +4,9 @@
 # everything that is not a cue: the warning about the 5-minute limit, the
 # "Before you record" checklist, "If you run long" and "Things not to say".
 #
-#   Part 1 only, the 5-minute Loom:   python ghostcue.py fuel_route_planner.txt --to 5:00
-#   Part 2 as a video of its own:     python ghostcue.py fuel_route_planner.txt --from 5:00
-#   One 10-minute video:              python ghostcue.py fuel_route_planner.txt
+#   Part 1 only, the 5-minute Loom:   python -m ghostcue prompter fuel_route_planner.txt --to 5:00
+#   Part 2 as a video of its own:     python -m ghostcue prompter fuel_route_planner.txt --from 5:00
+#   One 10-minute video:              python -m ghostcue prompter fuel_route_planner.txt
 
 # ===========================================================================
 # PART 1: THE API AND THE CODE (0:00 to 5:00)

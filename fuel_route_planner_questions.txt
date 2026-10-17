@@ -6,12 +6,12 @@
 # SHOW is what to have on screen if you want something behind the words.
 #
 #   To answer questions as they come, changing slide yourself:
-#       python ghostcue.py fuel_route_planner_questions.txt --manual
+#       python -m ghostcue prompter fuel_route_planner_questions.txt --manual
 #       (Ctrl+Alt+X next question, Ctrl+Alt+Z previous)
 #   To record them straight through, by the clock (3 minutes 42 seconds):
-#       python ghostcue.py fuel_route_planner_questions.txt
+#       python -m ghostcue prompter fuel_route_planner_questions.txt
 #   To see how the script was read:
-#       python ghostcue.py fuel_route_planner_questions.txt --check
+#       python -m ghostcue prompter fuel_route_planner_questions.txt --check
 #
 # Every figure was measured on this project, and the file names and line
 # numbers were checked against F:\CODE_LAB\spotter_test on 8 Oct 2026
