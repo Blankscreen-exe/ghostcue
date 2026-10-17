@@ -8,6 +8,7 @@ It uses the Claude Code login already on this machine.
 
 import collections
 import json
+import os
 import shutil
 import subprocess
 import threading
@@ -109,7 +110,15 @@ def build_prompt(settings, deep=False):
 
 
 def find_claude():
-    return shutil.which("claude") or shutil.which("claude.exe")
+    found = shutil.which("claude") or shutil.which("claude.exe")
+    if found:
+        return found
+    # Where its installers put it, for when GhostCue was started before PATH included it.
+    for place in (Path.home() / ".local" / "bin" / "claude.exe",
+                  Path(os.environ.get("APPDATA", "")) / "npm" / "claude.cmd"):
+        if place.is_file():
+            return str(place)
+    return None
 
 
 class Engine:
@@ -127,7 +136,8 @@ class Engine:
         self.closed = False
         claude = find_claude()
         if not claude:
-            raise RuntimeError("Claude Code was not found. Install it and sign in, then start again.")
+            raise RuntimeError("Claude Code was not found. Install it from claude.com/claude-code and sign in, "
+                               "then start again.")
         # The prompt goes in a file: with reference material it is far longer than a command line may be.
         config.APP_DIR.mkdir(parents=True, exist_ok=True)
         prompt_file = config.APP_DIR / ("prompt-deep.md" if folder else "prompt.md")

@@ -8,19 +8,47 @@ your monitor but that screen shares, recordings and screenshots cannot:
 - **The teleprompter** walks you through a timed script while you record a demo
   video.
 
-Needs Windows 10 version 2004 or later, Python 3.10+, and for the assistant
+Needs 64-bit Windows 10 version 2004 or later, and for the assistant
 [Claude Code](https://claude.com/claude-code), installed and signed in.
 
 ## Install
+
+Download `GhostCue-<version>-setup.exe` from the
+[latest release](https://github.com/Blankscreen-exe/ghostcue/releases/latest) and
+run it. It installs for your user only, without administrator rights, and adds
+GhostCue and the teleprompter to the Start menu. To use it without installing,
+download the `win64.zip` instead, unzip it anywhere and run `GhostCue.exe`.
+
+GhostCue is not code-signed yet, so Windows SmartScreen says "Windows protected
+your PC". Click **More info**, then **Run anyway**.
+
+### From source
+
+With Python 3.10 or later:
 
 ```
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
 
+Then double-click `GhostCue.bat`, or run `.venv\Scripts\python -m ghostcue`.
+
+### Making a release
+
+`packaginguild.ps1` builds `dist\GhostCue\` with PyInstaller, zips it, and, if
+[Inno Setup 6](https://jrsoftware.org/isinfo.php) is installed, makes the
+installer. It needs `packaging
+equirements.txt` installed in `.venv` as well.
+Set `GHOSTCUE_CONSOLE=1` to build an exe with a console, which shows errors and
+can run `GhostCue.exe listen`.
+
+To publish, raise `__version__` in `ghostcue/__init__.py`, commit, and push a tag
+of the same version (`git tag v0.2.0 && git push origin v0.2.0`). GitHub Actions
+builds both files and attaches them to a new release.
+
 ## The assistant
 
-Double-click `GhostCue.bat`, or run `.venv\Scripts\python -m ghostcue`. It lives
+Start GhostCue from the Start menu (from source, double-click `GhostCue.bat`). It lives
 in the system tray; click the icon for the settings window, right-click for the
 menu.
 
@@ -104,8 +132,8 @@ present with its CUDA libraries installed; that path has not been tested.
 - Transcribing a call may require telling the people on it, depending on where
   they are.
 
-`python -m ghostcue listen` prints what is heard on each side, with the delay,
-to check the audio without starting a call.
+From source, `python -m ghostcue listen` prints what is heard on each side, with
+the delay, to check the audio without starting a call.
 
 ## The teleprompter
 
@@ -115,7 +143,10 @@ python -m ghostcue prompter my_script.txt           # open the overlay
 python -m ghostcue prompter                         # pick the script in a file dialog
 ```
 
-It is also on the tray menu. It uses only the Python standard library.
+It is also on the tray menu, and installed it is in the Start menu as GhostCue
+Teleprompter, which asks for the script. The installed `GhostCue.exe prompter`
+takes the same options, except `--check`, which prints and so needs the source
+version. The teleprompter itself uses only the Python standard library.
 
 | Option | Effect |
 |--------|--------|

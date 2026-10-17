@@ -234,6 +234,18 @@ pre {
 }
 
 #install pre { max-width: 760px; margin-bottom: 14px; }
+.download { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 8px; }
+.download .small { max-width: 420px; }
+.button {
+  display: inline-block;
+  background: #2f6fed;
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+}
+.button:hover { background: #4a83f5; text-decoration: none; }
+.source-title { margin: 40px 0 14px !important; }
 
 .foot {
   max-width: 1040px;

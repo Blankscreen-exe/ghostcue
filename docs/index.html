@@ -199,7 +199,14 @@
   <section id="install">
     <span class="kicker">Install</span>
     <h2>Get started</h2>
-    <p class="lead">Needs Windows 10 version 2004 or later, Python 3.10 or later and, for the assistant, <a href="https://claude.com/claude-code">Claude Code</a>, installed and signed in.</p>
+    <p class="lead">Needs 64-bit Windows 10 version 2004 or later and, for the assistant, <a href="https://claude.com/claude-code">Claude Code</a>, installed and signed in.</p>
+    <div class="download">
+      <a class="button" href="https://github.com/Blankscreen-exe/ghostcue/releases/latest">Download for Windows</a>
+      <span class="small">The installer needs no administrator rights. A zip that runs without installing is on the same page.</span>
+    </div>
+    <p class="small">GhostCue is not code-signed yet, so Windows SmartScreen says "Windows protected your PC". Click <b>More info</b>, then <b>Run anyway</b>. The speech model downloads once, the first time you start listening.</p>
+
+    <h3 class="source-title">Or run it from source, with Python 3.10 or later</h3>
     <pre class="cmd"><span class="c"># get the code</span>
 git clone https://github.com/Blankscreen-exe/ghostcue.git
 cd ghostcue
@@ -210,7 +217,7 @@ python -m venv .venv
 
 <span class="c"># run: the assistant lives in the system tray</span>
 GhostCue.bat</pre>
-    <p class="small">The speech model downloads once, on the first start. The teleprompter is on the tray menu, or run <code>python -m ghostcue prompter my_script.txt</code>.</p>
+    <p class="small">The teleprompter is on the tray menu and in the Start menu, or run <code>python -m ghostcue prompter my_script.txt</code>.</p>
   </section>
 
 </main>
