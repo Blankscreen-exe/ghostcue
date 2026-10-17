@@ -154,7 +154,7 @@ section h3 { font-size: 18px; margin: 0 0 6px; }
 .intro > p.swipe { display: none; margin: 28px 0 -20px; color: var(--dim); font-size: 14px; }
 .desk {
   position: relative;
-  min-width: 780px;
+  min-width: 840px;
   padding: 150px 48px 44px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -185,7 +185,7 @@ section h3 { font-size: 18px; margin: 0 0 6px; }
 
 .mock {
   position: relative;
-  max-width: 840px;
+  max-width: 900px;
   margin: 0 auto;
   background: rgba(15, 17, 21, 0.95);
   border: 1px solid var(--track);
@@ -195,24 +195,27 @@ section h3 { font-size: 18px; margin: 0 0 6px; }
   font: 12px/1.4 var(--sans);
 }
 .mock p { margin: 0; }
-.mk-head { display: flex; align-items: center; gap: 14px; padding: 10px 14px 6px 16px; white-space: nowrap; }
+.mk-head { display: flex; align-items: center; gap: 30px; padding: 18px 20px 12px 22px; white-space: nowrap; }
 .mk-head .ok { color: var(--green); font-weight: 600; }
 .mk-note { flex: 1; overflow: visible; }
-.mk-body { padding: 10px 16px 14px; }
-.mk-q { font-size: 13px; margin-bottom: 8px !important; }
-.mk-say { color: var(--white); font-size: 20px; line-height: 1.35; margin-bottom: 6px !important; }
-.mk-pt { color: var(--blue); font-size: 16px; line-height: 1.4; margin-top: 4px !important; padding-left: 18px; text-indent: -14px; }
+.mk-body { padding: 18px 22px 20px; }
+/* Room between the parts, so that their outlines (5px out, 2px wide) stay apart. */
+.mk-body > * + * { margin-top: 22px !important; }
+.mk-q { font-size: 13px; }
+.mk-say { color: var(--white); font-size: 20px; line-height: 1.35; }
+.mk-pt { color: var(--blue); font-size: 16px; line-height: 1.4; padding-left: 18px; text-indent: -14px; }
+.mk-pts .mk-pt + .mk-pt { margin-top: 4px; }
 .mk-pt::before { content: "•"; display: inline-block; width: 14px; text-indent: 0; }
 .mk-pt.warn { color: var(--amber); }
-.mk-heard { padding: 4px 16px 6px; }
-.mk-foot { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 4px 4px 16px; white-space: nowrap; }
+.mk-heard { padding: 8px 22px 0; }
+.mk-foot { display: flex; justify-content: space-between; align-items: flex-end; padding: 22px 10px 10px 22px; white-space: nowrap; }
 .mk-grip { width: 12px; height: 12px; background: radial-gradient(circle, #4b5262 1.2px, transparent 1.6px) 0 0 / 4px 4px; }
 
 /* The drawing's parts, always outlined in yellow. The one chosen, by hovering, tapping or tabbing
    to it, is brighter, and its line of the key shows below. */
 .part {
   outline: 1px dashed rgba(255, 200, 87, 0.45);
-  outline-offset: 3px;
+  outline-offset: 5px;
   border-radius: 3px;
   cursor: pointer;
   transition: outline-color 0.15s, background-color 0.15s;
