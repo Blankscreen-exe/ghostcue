@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GhostCue: answers on your screen, invisible to theirs</title>
+  <meta name="description" content="A live-call assistant and a teleprompter for software demos, in a window that screen shares, recordings and screenshots cannot see.">
+  <meta property="og:title" content="GhostCue">
+  <meta property="og:description" content="Answers on your screen, invisible to theirs. A live-call assistant and a teleprompter for software demos on Windows.">
+  <meta property="og:image" content="ghost.png">
+  <link rel="icon" type="image/png" href="ghost.png">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // index.html?banner shows the banner alone, to take a picture of.
+    if (new URLSearchParams(location.search).has("banner")) document.documentElement.classList.add("banner-only");
+  </script>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="#top"><img src="ghost.png" alt=""> GhostCue</a>
+  <div class="links">
+    <a href="#assistant">Assistant</a>
+    <a href="#teleprompter">Teleprompter</a>
+    <a href="#install">Install</a>
+    <a class="gh" href="https://github.com/Blankscreen-exe/ghostcue">GitHub</a>
+  </div>
+</nav>
+
+<!-- The banner keeps a 2:1 shape and scales as one picture, so a screenshot of it
+     looks the same at any width. At a window 1280 px wide or more it is 1280 × 640. -->
+<header class="banner" id="top">
+  <div class="banner-art">
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <div class="grid"></div>
+
+    <div class="pitch">
+      <img class="ghost" src="ghost.png" alt="">
+      <h1>GhostCue</h1>
+      <p class="tagline">Answers on your screen.<br><span>Invisible to theirs.</span></p>
+      <p class="sub">A live-call assistant and a teleprompter for software demos, in a window that screen shares, recordings and screenshots cannot see.</p>
+      <ul class="chips">
+        <li>Windows 10 / 11</li>
+        <li>Your own Claude Code</li>
+        <li>Speech transcribed on your PC</li>
+      </ul>
+    </div>
+
+    <div class="stage">
+      <div class="label label-you"><i class="dot"></i>On your monitor</div>
+      <div class="overlay">
+        <div class="ov-head">
+          <b class="ok">LISTENING</b>
+          <span class="grow"></span>
+          <span>hidden from capture</span>
+          <span class="btns">history&ensp;answer&ensp;deeper&ensp;type&ensp;more&ensp;stop&ensp;✕</span>
+        </div>
+        <div class="ov-body">
+          <p class="q">CLIENT&ensp;How long does setup take for a team our size?</p>
+          <p class="say">Most teams are running in a day: you import your drivers from a spreadsheet and assign vehicles.</p>
+          <p class="pt">CSV or Excel import, no IT work on your side</p>
+          <p class="pt">Routes are planned the moment a vehicle is assigned</p>
+          <p class="pt warn">Not in brief: single sign-on setup time</p>
+        </div>
+        <div class="ov-heard">CLIENT&ensp;and how long does setup take for a team our size?</div>
+        <div class="ov-foot">Ctrl+Alt +&ensp; A answer&ensp; D dig deeper&ensp; T type&ensp; E explain more&ensp; , previous&ensp; . next</div>
+      </div>
+      <div class="label label-them">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3.2 4.3M6.6 6.6C4.4 8 2.8 10.2 2 12c1 2.5 5 7 10 7 1.8 0 3.4-.5 4.8-1.3M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+        In the screen share: nothing
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="intro">
+    <p>You are showing your software on a call. The client asks something you did not prepare for. GhostCue has heard the question, and one sentence to say, with the points behind it, is already on your screen. Nobody else can see it: the window is left out of every screen share, recording and screenshot by Windows itself.</p>
+  </section>
+
+  <section class="tools">
+    <a class="tool" href="#assistant">
+      <span class="kicker">For live calls</span>
+      <h2>The assistant</h2>
+      <p>Listens to the call and tells you what to say when the client asks a question, drawing on your brief and your own documents.</p>
+    </a>
+    <a class="tool" href="#teleprompter">
+      <span class="kicker">For recorded demos</span>
+      <h2>The teleprompter</h2>
+      <p>Walks you through a timed script while you record a demo video: what to show, what to do, and the words to say.</p>
+    </a>
+  </section>
+
+  <section id="assistant">
+    <span class="kicker">The assistant</span>
+    <h2>From the client's question to your answer in seconds</h2>
+    <p class="lead">An answer starts to appear about two to four seconds after the client stops speaking: the question, one sentence to say, and up to three supporting points.</p>
+
+    <ol class="steps">
+      <li><b>Context</b><span>Write the brief: what you are showing, who the client is, what they care about, and what you must not promise.</span></li>
+      <li><b>Knowledge</b><span>Add FAQs, pricing or specification files for the answers to draw on, and a project folder to dig into.</span></li>
+      <li><b>Audio</b><span>Play a sound and speak, and check that both level bars move.</span></li>
+      <li><b>Start listening</b><span>Press it before the call. The first start takes about ten seconds while Claude Code starts.</span></li>
+    </ol>
+
+    <div class="features">
+      <div>
+        <h3>Answers that know their limits</h3>
+        <p>A point marked <code class="amber">Not in brief:</code> means your material did not cover the question, and the sentence above it is a holding answer rather than a fact.</p>
+      </div>
+      <div>
+        <h3>As long as you need</h3>
+        <p>Answer length runs from one sentence to a full explanation. A question about a set of things gets every member, and a request for code gets the code.</p>
+      </div>
+      <div>
+        <h3>Look back through the call</h3>
+        <p>Every answer stays until the next call. Step back with Ctrl+Alt+, or open the history and pick a question. A new answer waits for you instead of pushing away the one you are reading.</p>
+      </div>
+      <div>
+        <h3>Urdu and English</h3>
+        <p>For Urdu-speaking clients, answers come in the client's language, with Urdu in Roman letters. The overlay shows the question as it was understood, so you can tell when it misheard.</p>
+      </div>
+    </div>
+
+    <h3 class="table-title">Hotkeys, all with Ctrl+Alt</h3>
+    <div class="keys">
+      <div><kbd>A</kbd>answer now, whatever the client last said</div>
+      <div><kbd>D</kbd>dig deeper: search your project folder</div>
+      <div><kbd>T</kbd>type the question yourself, when it was misheard</div>
+      <div><kbd>E</kbd>explain more: the last question, in full</div>
+      <div><kbd>,</kbd><kbd>.</kbd>previous and next answer</div>
+      <div><kbd>S</kbd>show or hide the overlay</div>
+      <div><kbd>L</kbd>start or stop listening</div>
+    </div>
+  </section>
+
+  <section id="how">
+    <span class="kicker">How it works</span>
+    <h2>On your computer, with your own Claude</h2>
+    <div class="how">
+      <div>
+        <h3>Both sides of the call</h3>
+        <p>The client is whatever your speakers or headphones play, captured with WASAPI loopback. You are the microphone. Wear headphones: GhostCue drops microphone speech that overlaps the client's.</p>
+      </div>
+      <div>
+        <h3>Transcribed locally</h3>
+        <p>Speech is turned into text on this computer with faster-whisper. In English the <code>base</code> model takes about 0.7 seconds a sentence on a six-core CPU.</p>
+      </div>
+      <div>
+        <h3>Answered by your Claude Code</h3>
+        <p>Answers come from your own Claude Code, kept running for the length of the call so each answer starts in under a second. The transcript is sent to Anthropic to be answered and counts towards your plan's usage.</p>
+      </div>
+      <div>
+        <h3>Kept to yourself</h3>
+        <p>Settings and call transcripts stay in <code>%APPDATA%\GhostCue</code>, and transcripts can be turned off. No Claude Code session is saved.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="teleprompter">
+    <span class="kicker">The teleprompter</span>
+    <h2>Record a demo without losing your place</h2>
+    <p class="lead">Write the demo as a plain-text script of timed cues. The overlay shows each cue's directions on the left and the words to say on the right, and moves on by the clock or when you press a key.</p>
+    <div class="split">
+      <pre class="script"><span class="t">[0:12] Sign in</span>
+<span class="do">DO:</span> Type the email and password, then click "Sign in".
+<span class="show">SHOW:</span> The dashboard, with the three summary cards.
+<span class="sayk">SAY:</span>
+  I'll start by signing in with a demo account.
+  This is the dashboard.
+<span class="note">NOTE:</span> If the login is slow, keep talking.</pre>
+      <div>
+        <div class="keys narrow">
+          <div><kbd>Space</kbd>start or pause the clock</div>
+          <div><kbd>X</kbd><kbd>Z</kbd>next or previous cue</div>
+          <div><kbd>R</kbd>restart from the first cue</div>
+          <div><kbd>M</kbd>auto or manual advance</div>
+          <div><kbd>↑</kbd><kbd>↓</kbd>bigger or smaller text</div>
+          <div><kbd>H</kbd>hide or show</div>
+        </div>
+        <p class="small">In manual mode, cues change only when you press Next or Previous, and the countdown turns red when you fall behind the script. The teleprompter uses only the Python standard library.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="before">
+    <span class="kicker">Before a real call</span>
+    <h2>Check it once</h2>
+    <ul class="checks">
+      <li>Share your screen in a test meeting and confirm on a second device that the overlay is absent. Its header reads <code>hidden from capture</code> while the exclusion is active, and a red <code class="red">VISIBLE TO SCREEN SHARE</code> if it could not be applied.</li>
+      <li>The overlay is hidden but your mouse pointer is not, so use the hotkeys.</li>
+      <li>Speech recognition mishears names. List yours under Context, in "Names and jargon".</li>
+      <li>Transcribing a call may require telling the people on it, depending on where they are.</li>
+    </ul>
+  </section>
+
+  <section id="install">
+    <span class="kicker">Install</span>
+    <h2>Get started</h2>
+    <p class="lead">Needs Windows 10 version 2004 or later, Python 3.10 or later and, for the assistant, <a href="https://claude.com/claude-code">Claude Code</a>, installed and signed in.</p>
+    <pre class="cmd"><span class="c"># get the code</span>
+git clone https://github.com/Blankscreen-exe/ghostcue.git
+cd ghostcue
+
+<span class="c"># install</span>
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+
+<span class="c"># run: the assistant lives in the system tray</span>
+GhostCue.bat</pre>
+    <p class="small">The speech model downloads once, on the first start. The teleprompter is on the tray menu, or run <code>python -m ghostcue prompter my_script.txt</code>.</p>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <img src="ghost.png" alt=""> GhostCue&ensp;·&ensp;<a href="https://github.com/Blankscreen-exe/ghostcue">Source on GitHub</a>
+</footer>
+
+</body>
+</html>
