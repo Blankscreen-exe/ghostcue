@@ -42,9 +42,10 @@ equirements.txt` installed in `.venv` as well.
 Set `GHOSTCUE_CONSOLE=1` to build an exe with a console, which shows errors and
 can run `GhostCue.exe listen`.
 
-To publish, raise `__version__` in `ghostcue/__init__.py`, commit, and push a tag
-of the same version (`git tag v0.2.0 && git push origin v0.2.0`). GitHub Actions
-builds both files and attaches them to a new release.
+Releases are made by GitHub Actions. To publish one, raise `__version__` in
+`ghostcue/__init__.py` and push to `main`: when a push brings a version that has
+no release yet, the workflow builds both files, tags the commit and publishes
+them. Other pushes build nothing.
 
 ## The assistant
 
