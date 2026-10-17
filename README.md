@@ -1,4 +1,4 @@
-# GhostCue
+![banner](docs/images/banner.png)
 
 Two tools for showing software on a call, both in a window that you can see on
 your monitor but that screen shares, recordings and screenshots cannot:
