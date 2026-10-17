@@ -49,6 +49,14 @@ answer rather than a fact.
 | E | explain more: answer the last question again, in full |
 | S | show / hide the overlay |
 | L | start / stop listening |
+| , | show the previous answer |
+| . | show the next answer |
+
+Every answer of the call stays in the overlay until the next **Start listening**.
+Ctrl+Alt+, and Ctrl+Alt+. step back and forward through them; `history`, in the
+overlay's header, lists them all by the question they answered, and a click shows
+one. While you are looking back, an answer that comes is not put in front of you:
+the header says `NEW ANSWER`, and `latest` (or Ctrl+Alt+. to the end) shows it.
 
 ### How it works
 

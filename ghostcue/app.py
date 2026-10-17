@@ -137,6 +137,11 @@ class App:
             else:
                 self.overlay.show_heard("", "Start listening first (Ctrl+Alt+L); then you can type a question.")
             self.update_menu()
+        elif action in ("back", "forward"):
+            if not self.overlay.isVisible():
+                self.overlay.reveal()
+            self.overlay.step(-1 if action == "back" else 1)
+            self.update_menu()
         else:
             self.session.ask(action)
 
@@ -146,7 +151,7 @@ class App:
             return
         config.save(self.settings)
         self.meter.stop()
-        self.overlay.show_answer("", "")
+        self.overlay.clear()
         self.overlay.show_heard("", "")
         self.overlay.reveal()
         self.session.start(self.settings)

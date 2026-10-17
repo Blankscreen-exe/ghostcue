@@ -49,7 +49,7 @@ class Session(QObject):
     state = Signal(str, str)       # "starting", "listening", "stopped" or "error", and a line of detail
     heard = Signal(str, str)       # speaker, what they said
     thinking = Signal(str)         # what is being worked on, or "" when nothing is
-    answer = Signal(str, str)      # the question, and the reply so far
+    answer = Signal(int, str, str, str)  # the request number, its kind, the question, and the reply so far
     level = Signal(str, float)     # speaker, sound level
 
     def __init__(self):
@@ -70,7 +70,7 @@ class Session(QObject):
         self.lines = []                               # the call so far, as (speaker, text)
         self.sent = 0                                 # how many of them the main engine has been given
         self.client_spans = collections.deque(maxlen=50)
-        self.questions, self.replies = {}, {}         # by request number
+        self.questions, self.kinds, self.replies = {}, {}, {}  # by request number
         self.requests = 0
         self.last_question = ""
         self.warming = set()
@@ -227,6 +227,7 @@ class Session(QObject):
         transcript = "\n".join(f"{speaker}: {text}" for speaker, text in lines)
         self.requests += 1
         self.questions[self.requests] = self.last_question = question
+        self.kinds[self.requests] = kind
         self.thinking.emit("Reading the files…" if kind == "deep" else "Thinking…")
         engine.ask(f"{transcript}\n\n{REQUESTS[kind].format(typed)}".strip(), self.requests)
 
@@ -251,13 +252,14 @@ class Session(QObject):
         self.replies[tag] = reply
         # A lone hyphen means "no reply needed": leave the last answer on screen.
         if reply.strip() not in ("", "-"):
-            self.answer.emit(self.questions.get(tag, ""), reply.strip())
+            self.answer.emit(tag, self.kinds.get(tag, ""), self.questions.get(tag, ""), reply.strip())
         if kind == "done":
             self.thinking.emit("")
             if reply.strip() not in ("", "-"):
                 self.record(f"> **Answer to:** {self.questions.get(tag, '')}\n>\n"
                             + "\n".join("> " + line for line in reply.strip().splitlines()) + "\n\n")
             self.questions.pop(tag, None)
+            self.kinds.pop(tag, None)
             self.replies.pop(tag, None)
 
     def fail(self, reason):
