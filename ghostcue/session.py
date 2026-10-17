@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject, Signal
 
 from . import config
 from .audio import CLIENT, ME, AudioError, Source
+from .capture import CaptureError, Capturer, front_window
 from .engine import Engine, build_prompt
 
 # Speech that asks for something: a question mark, an opening question word, or a request to explain.
@@ -37,6 +38,9 @@ REQUESTS = {
             "point each, and take the length that needs. Do not reply with a hyphen.",
     "typed": "The client's question was misheard, so the presenter has typed it: «{}». "
              "Answer that question. Do not reply with a hyphen.",
+    "window": "The presenter has captured the window they are looking at, shown above. Answer the client's latest "
+              "question from it, together with the brief. If the client has asked nothing that it answers, say what "
+              "on it matters most for the call. Do not reply with a hyphen.",
 }
 LANGUAGES = {"en": "English", "ur": "Urdu", "mix": "Urdu + English"}
 WARM = "The call is about to start. Reply with only the word: ready"
@@ -57,6 +61,7 @@ class Session(QObject):
         self.running = False
         self.transcriber = self.transcriber_key = None
         self.audio = self.main = self.deep = self.history = None
+        self.capturer = None  # started at the first capture, and kept
         self.sources = []
 
     # ---- starting and stopping ----
@@ -73,6 +78,8 @@ class Session(QObject):
         self.questions, self.kinds, self.replies = {}, {}, {}  # by request number
         self.requests = 0
         self.last_question = ""
+        self.capture = None                           # the latest captured window
+        self.capture_to_deep = False                  # whether the file-reading engine has been sent it
         self.warming = set()
         self.began = time.monotonic()
         self.state.emit("starting", "Loading the speech model…")
@@ -200,14 +207,18 @@ class Session(QObject):
 
     # ---- answering ----
 
-    def ask(self, kind, typed=""):
+    def ask(self, kind, typed="", capture=None):
         """Ask Claude what to say.
 
         `kind` is "auto" after a client question, "now" on the hotkey, "deep" to read the
-        files, "more" to answer the last question again at length, or "typed" to answer the
-        question the presenter typed in `typed`.
+        files, "more" to answer the last question again at length, "typed" to answer the
+        question the presenter typed in `typed`, or "window" to capture the window in front
+        and answer from it, which is then asked again with the `capture`.
         """
         if not self.running or not self.main:
+            return
+        if kind == "window" and capture is None:
+            self.capture_window()
             return
         question = typed or next((text for speaker, text in reversed(self.lines) if speaker == CLIENT), "")
         if kind == "more":
@@ -222,14 +233,48 @@ class Session(QObject):
         else:
             engine, lines = self.main, self.lines[self.sent:]
             self.sent = len(self.lines)
-        if not question and kind != "now":
+        if not question and kind not in ("now", "window"):
             return
         transcript = "\n".join(f"{speaker}: {text}" for speaker, text in lines)
+        # A capture goes to the main engine when it is taken, and to the file-reading one the
+        # next time that is asked; each then remembers it for the rest of the call.
+        shown, images = "", []
+        if kind == "window" or (kind == "deep" and self.capture and not self.capture_to_deep):
+            capture = capture or self.capture
+            shown, images = capture.describe(), [capture.png]
+            self.capture_to_deep = kind == "deep"
         self.requests += 1
         self.questions[self.requests] = self.last_question = question
         self.kinds[self.requests] = kind
-        self.thinking.emit("Reading the files…" if kind == "deep" else "Thinking…")
-        engine.ask(f"{transcript}\n\n{REQUESTS[kind].format(typed)}".strip(), self.requests)
+        self.thinking.emit({"deep": "Reading the files…", "window": "Reading the window…"}.get(kind, "Thinking…"))
+        message = "\n\n".join(part for part in (transcript, shown, REQUESTS[kind].format(typed)) if part)
+        engine.ask(message, self.requests, images)
+
+    def capture_window(self):
+        """Capture the window in front, on the capture thread, then answer from it."""
+        try:
+            hwnd = front_window()
+        except CaptureError as error:
+            self.heard.emit("", str(error))
+            return
+        self.thinking.emit("Capturing the window…")
+        if self.capturer is None:
+            self.capturer = Capturer()
+        self.capturer.capture(hwnd, self.captured)
+
+    def captured(self, result):
+        """Called on the capture thread with the Capture, or the CaptureError that stopped it."""
+        if isinstance(result, CaptureError):
+            self.thinking.emit("")
+            self.heard.emit("", str(result))
+            return
+        if not self.running:
+            return
+        self.capture, self.capture_to_deep = result, False
+        self.heard.emit("captured", f"{result.title}   ({'whole page' if result.text else 'screenshot'})")
+        self.record(f"**Captured** ({self.clock()}): {result.title}" + (f" <{result.url}>" if result.url else "")
+                    + "\n\n")
+        self.ask("window", capture=result)
 
     def on_event(self, tag, kind, text):
         if isinstance(tag, tuple):  # the reply to a warm-up

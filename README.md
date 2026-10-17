@@ -75,6 +75,7 @@ answer rather than a fact.
 | A | answer now, whatever the client last said |
 | D | dig deeper: search the project folder set under Knowledge (several seconds slower) |
 | T | type the client's question yourself, when it was misheard; Enter asks, Esc cancels |
+| W | capture the window you are on and answer from it |
 | E | explain more: answer the last question again, in full |
 | S | show / hide the overlay |
 | L | start / stop listening |
@@ -87,6 +88,32 @@ overlay's header, lists them all by the question they answered, and a click show
 one. While you are looking back, an answer that comes is not put in front of you:
 the header says `NEW ANSWER`, and `latest` (or Ctrl+Alt+. to the end) shows it.
 
+### Answering from a window
+
+When the client asks about something on screen (a web page they sent, an email,
+what they are showing you), click into that window and press Ctrl+Alt+W, or
+`window` in the overlay's header. GhostCue captures the window, and the answer
+uses what is on it. The line above the hotkeys says what was captured.
+
+- **A web page in your browser** goes with its address and its whole text, read
+  the way a screen reader reads it, so the parts above and below the screen come
+  too, without scrolling. Very long pages are cut after 40,000 characters. The
+  first capture in a browser can take a second while it prepares the text. This
+  is tested with Chrome and Edge; other browsers built on Chromium (Brave, Opera,
+  Vivaldi) should work the same, and a browser that gives no page text, perhaps
+  Firefox, sends the screenshot alone.
+- **Any other window**, the client's shared screen in Zoom or Teams among them,
+  goes as a screenshot only: the answer knows what you can see, and no more.
+- **Each capture stays in the call's conversation**, so later questions can use
+  it without capturing again. The next Ctrl+Alt+D gets it too.
+- The screenshot and page text are sent to Anthropic like the transcript, and
+  only when you press the key. The transcript notes which window was captured,
+  not what was on it.
+
+`python -m ghostcue capture` captures the window in front after three seconds
+and saves what Ctrl+Alt+W would send, to `%APPDATA%\GhostCue\capture.png` and
+`capture.txt`, without sending anything.
+
 ### How it works
 
 - **Client audio** is whatever your speakers or headphones play, captured with
@@ -97,8 +124,9 @@ the header says `NEW ANSWER`, and `latest` (or Ctrl+Alt+. to the end) shows it.
   takes about 0.7 seconds a sentence on a six-core CPU; `small` is more
   accurate but takes 2 to 3 seconds without a GPU.
 - **Answers come from your own Claude Code**, kept running for the length of the
-  call so that each answer starts in under a second. The transcript is sent to
-  Anthropic to be answered, as with any use of Claude Code, and counts towards
+  call so that each answer starts in under a second. The transcript, and any
+  window you capture, is sent to Anthropic to be answered, as with any use of
+  Claude Code, and counts towards
   your plan's usage. No Claude Code session is saved.
 - **Settings and call transcripts** are kept in `%APPDATA%\GhostCue`. Turn
   transcripts off under Assistant.

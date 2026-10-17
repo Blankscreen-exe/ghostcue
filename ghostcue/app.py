@@ -135,6 +135,10 @@ class App:
             else:
                 self.overlay.show_heard("", "Start listening first (Ctrl+Alt+L); then you can type a question.")
             self.update_menu()
+        elif action == "window" and not self.session.running:
+            self.overlay.reveal()
+            self.overlay.show_heard("", "Start listening first (Ctrl+Alt+L); then you can capture a window.")
+            self.update_menu()
         elif action in ("back", "forward"):
             if not self.overlay.isVisible():
                 self.overlay.reveal()

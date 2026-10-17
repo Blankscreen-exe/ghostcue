@@ -6,7 +6,7 @@ import threading
 from ctypes import wintypes
 
 WDA_EXCLUDEFROMCAPTURE = 0x11  # Windows 10 2004+: on the monitor, absent from every capture
-GA_ROOT = 2
+GA_ROOT, GA_ROOTOWNER = 2, 3
 GWL_EXSTYLE = -20
 WS_EX_TOOLWINDOW = 0x80        # no taskbar button, not listed in Alt+Tab
 WS_EX_NOACTIVATE = 0x08000000  # clicking the overlay never takes focus from the app being demoed

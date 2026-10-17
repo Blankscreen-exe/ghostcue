@@ -21,6 +21,7 @@ HOTKEYS = (
     (0x41, "A", "now", "answer"),
     (0x44, "D", "deep", "dig deeper"),
     (0x54, "T", "type", "type"),
+    (0x57, "W", "window", "window"),
     (0x45, "E", "more", "explain more"),
     (0x53, "S", "show", "show/hide"),
     (0x4C, "L", "listen", "start/stop"),
@@ -48,7 +49,7 @@ QUESTION_SHOWN = 200  # characters of the client's question shown above the answ
 STATES = {"starting": ("STARTING", AMBER), "listening": ("LISTENING", GREEN),
           "stopped": ("OFF", DIM), "error": ("ERROR", RED)}
 
-KINDS = {"deep": "DEEP", "more": "MORE", "typed": "TYPED"}  # the answers marked as such in the history list
+KINDS = {"deep": "DEEP", "more": "MORE", "typed": "TYPED", "window": "WINDOW"}  # the answers marked as such in the history list
 
 
 def understood(question, reply):
@@ -99,7 +100,7 @@ def render(question, reply, size):
 
 
 class Overlay(QWidget):
-    action = Signal(str)   # a header button was pressed: "now", "deep", "type", "more", "listen" or "show"
+    action = Signal(str)   # a header button was pressed: "now", "deep", "type", "window", "more", "listen" or "show"
     moved = Signal()       # the window was moved or resized by hand
 
     def __init__(self, settings, hotkeys_failed=()):
@@ -149,6 +150,8 @@ class Overlay(QWidget):
         header.addWidget(button("answer", "now"))
         header.addWidget(button("deeper", "deep"))
         header.addWidget(button("type", "type"))
+        # Clicking the overlay leaves the window in front where it was, so this captures that window.
+        header.addWidget(button("window", "window"))
         header.addWidget(button("more", "more"))
         header.addWidget(self.toggle)
         header.addWidget(button("✕", "show"))

@@ -3,3 +3,4 @@ faster-whisper>=1.0
 PyAudioWPatch>=0.2.12
 numpy
 truststore
+comtypes

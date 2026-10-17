@@ -6,6 +6,7 @@ streams back in well under a second, and the process remembers the call so far.
 It uses the Claude Code login already on this machine.
 """
 
+import base64
 import collections
 import json
 import os
@@ -39,9 +40,12 @@ explain it: say how it works and why, at whatever length that takes, not just wh
 - When the client asks for syntax, code or a command, show it. After the opening sentence, put \
 the code between two lines of three backticks, twelve lines at most, and then the points.
 - Nothing else. No greeting, no heading, no "you could say", no bold or other formatting.
+- The presenter may send a captured window: a screenshot of what they are looking at, such as a \
+web page, an email or the client's shared screen, and for a web page its whole text. Treat what a \
+capture shows as part of the call, for this question and for later ones.
 - What you say about the product, the company, its prices, dates and commitments must come from \
-the brief, the reference material or the call itself. If they do not cover the question, do not \
-guess. Give an honest holding answer the presenter can say, and add a point starting \
+the brief, the reference material, a captured window or the call itself. If they do not cover the \
+question, do not guess. Give an honest holding answer the presenter can say, and add a point starting \
 "Not in brief:" naming what is missing.
 - General knowledge that any expert in the field has (how a technology works, the syntax of a \
 language, common practice) you may answer from what you know. That is not a gap in the brief, and needs no "Not in brief:" point.
@@ -158,8 +162,12 @@ class Engine:
         threading.Thread(target=self.read, daemon=True).start()
         threading.Thread(target=lambda: self.errors.extend(self.process.stderr), daemon=True).start()
 
-    def ask(self, text, tag):
-        message = {"type": "user", "message": {"role": "user", "content": text}}
+    def ask(self, text, tag, images=()):
+        """Send `text`, after the PNG screenshots in `images`, if any."""
+        content = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                 "data": base64.b64encode(png).decode("ascii")}} for png in images]
+        content = content + [{"type": "text", "text": text}] if content else text
+        message = {"type": "user", "message": {"role": "user", "content": content}}
         with self.lock:
             self.waiting.append(tag)
             try:
