@@ -5,17 +5,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QPoint, Qt, QTimer, Signal
-from PySide6.QtGui import QActionGroup, QColor, QIcon, QPainter, QPalette, QPixmap
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
+from PySide6.QtGui import QActionGroup, QColor, QIcon, QPainter, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 from . import config
 from .overlay import AMBER, BG, DIM, GREEN, HOTKEYS, RED, TRACK, WHITE, AskBar, Overlay
 from .session import Meter, Session
 from .settings_window import CALL_NOTES, SettingsWindow
-from .win32 import Hotkeys, single_instance
+from .win32 import Hotkeys, set_app_id, single_instance
 
 STATE_COLOURS = {"starting": AMBER, "listening": GREEN, "stopped": DIM, "error": RED}
+GHOST = Path(__file__).with_name("ghost.png")  # the app's icon
 
 STYLE = f"""
 QWidget {{ font: 10pt "Segoe UI"; }}
@@ -44,17 +45,15 @@ def dark_palette():
 
 
 def icon(colour):
-    """The tray icon: a speech bubble whose dot shows the state."""
+    """The tray icon: the ghost, with a dot on its corner that shows the state."""
     pixmap = QPixmap(64, 64)
     pixmap.fill(Qt.transparent)
     painter = QPainter(pixmap)
-    painter.setRenderHint(QPainter.Antialiasing)
-    painter.setPen(Qt.NoPen)
-    painter.setBrush(QColor(WHITE))
-    painter.drawRoundedRect(4, 8, 56, 40, 12, 12)
-    painter.drawPolygon([QPoint(18, 44), QPoint(18, 60), QPoint(34, 44)])
+    painter.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+    painter.drawPixmap(0, 0, 64, 64, QPixmap(str(GHOST)))
+    painter.setPen(QPen(QColor(BG), 4))  # a dark ring keeps the dot apart from the ghost
     painter.setBrush(QColor(colour))
-    painter.drawEllipse(21, 17, 22, 22)
+    painter.drawEllipse(38, 38, 24, 24)
     painter.end()
     return QIcon(pixmap)
 
@@ -77,7 +76,6 @@ class App:
         self.overlay = Overlay(self.settings, self.hotkeys.failed)
         self.ask_bar = AskBar()
         self.window = SettingsWindow(self.settings)
-        self.window.setWindowIcon(icon(GREEN))
         self.save_later = QTimer(singleShot=True, interval=500, timeout=lambda: config.save(self.settings))
 
         self.tray = QSystemTrayIcon(icon(DIM))
@@ -238,8 +236,10 @@ def main():
         config.APP_DIR.mkdir(parents=True, exist_ok=True)
         sys.stdout = sys.stderr = open(config.APP_DIR / "ghostcue.log", "w", encoding="utf-8", buffering=1)
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+    set_app_id("GhostCue.Assistant")
     app = QApplication(sys.argv)
     app.setApplicationName("GhostCue")
+    app.setWindowIcon(QIcon(str(GHOST)))
     app.setQuitOnLastWindowClosed(False)
     app.setStyle("Fusion")
     app.setPalette(dark_palette())

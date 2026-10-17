@@ -64,6 +64,14 @@ def take_keyboard(hwnd):
     return user32.GetForegroundWindow() == hwnd
 
 
+def set_app_id(name):
+    """Group this process's windows on the taskbar under `name`, so they show the app's icon, not Python's."""
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(name)
+    except (AttributeError, OSError):
+        pass
+
+
 def single_instance(name):
     """True if this is the only running process that has claimed `name`."""
     single_instance.handle = kernel32.CreateMutexW(None, False, name)  # held until the process exits
