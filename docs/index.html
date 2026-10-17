@@ -76,8 +76,59 @@
 
 <main>
 
-  <section class="intro">
+  <section class="intro" id="overlay">
+    <span class="kicker">The overlay</span>
+    <h2>A window only you can see</h2>
     <p>You are showing your software on a call. The client asks something you did not prepare for. GhostCue has heard the question, and one sentence to say, with the points behind it, is already on your screen. Nobody else can see it: the window is left out of every screen share, recording and screenshot by Windows itself.</p>
+    <p class="small note">Which is also why this is a drawing: a screenshot of the overlay comes out without it.</p>
+
+    <!-- A copy of the overlay, drawn in HTML: the real one cannot be screenshotted. The numbered
+         pins mark its parts, explained in the key below. -->
+    <p class="swipe">Swipe sideways to see the whole window →</p>
+    <div class="desk-scroll">
+      <div class="desk" aria-label="The GhostCue overlay, floating over a web page">
+        <div class="page-behind" aria-hidden="true">
+          <div class="pb-bar"><i></i><i></i><i></i><span>acmefleet.com/pricing</span></div>
+          <div class="pb-body">
+            <b class="pb-title"></b>
+            <div class="pb-cards"><span></span><span></span><span></span></div>
+            <b class="pb-line"></b><b class="pb-line short"></b><b class="pb-line"></b>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mk-head">
+            <b class="ok"><i class="pin">1</i>LISTENING</b>
+            <span class="mk-note"><i class="pin">2</i>English. Listening to Speakers (Realtek Audio).</span>
+            <span class="mk-capture"><i class="pin">3</i>hidden from capture</span>
+            <span class="mk-buttons"><i class="pin">4</i>history&ensp; answer&ensp; deeper&ensp; type&ensp; window&ensp; more&ensp; stop&ensp; ✕</span>
+          </div>
+          <div class="mk-body">
+            <p class="mk-q"><i class="pin">5</i>CLIENT&ensp;What would fifty drivers cost us on the annual plan?</p>
+            <p class="mk-say"><i class="pin">6</i>On the annual plan it comes to 510 dollars a month for fifty drivers, billed as 6,120 for the year.</p>
+            <p class="mk-pt"><i class="pin">7</i>The pricing page lists 12 dollars per driver per month</p>
+            <p class="mk-pt">Annual billing takes 15 percent off, which the same page shows</p>
+            <p class="mk-pt warn"><i class="pin">8</i>Not in brief: whether a fleet this size gets a volume discount</p>
+          </div>
+          <div class="mk-heard"><span><i class="pin">9</i>CAPTURED&ensp;Pricing – Acme Fleet – Google Chrome&ensp; (whole page)</span></div>
+          <div class="mk-foot"><span><i class="pin">10</i>Ctrl+Alt +&ensp; A answer&ensp; D dig deeper&ensp; T type&ensp; W window&ensp; E explain more&ensp; S show/hide&ensp; L start/stop&ensp; , previous&ensp; . next</span><span class="mk-grip"><i class="pin">11</i></span></div>
+        </div>
+      </div>
+    </div>
+
+    <ol class="key">
+      <li><b>State.</b> Listening, starting, off, or an error, which then fills the window with what went wrong.</li>
+      <li><b>What it is doing.</b> The devices it listens to, or "Thinking…", "Reading the window…" while an answer is on its way.</li>
+      <li><b>The capture check.</b> Says the window is hidden from screen shares, and turns into a red <code class="red">VISIBLE TO SCREEN SHARE</code> if Windows would not hide it.</li>
+      <li><b>Buttons.</b> The same as the hotkeys. Clicking them never takes the keyboard from the app you are demoing; <code>history</code> lists the call's earlier answers.</li>
+      <li><b>The question</b> it is answering. <code>ASKED</code> in place of <code>CLIENT</code> is the question as the assistant understood it, on Urdu calls.</li>
+      <li><b>What to say,</b> in your own voice, ready to read out.</li>
+      <li><b>The points behind it:</b> facts, figures and where they came from.</li>
+      <li><b>Not in brief:</b> your material did not cover this, so the sentence above is a holding answer, not a promise.</li>
+      <li><b>What it heard last,</b> or here, the window you captured with Ctrl+Alt+W, and whether the whole page came with it.</li>
+      <li><b>The hotkeys,</b> all with Ctrl+Alt, so you never have to reach for the overlay mid-call.</li>
+      <li><b>Drag anywhere to move it;</b> drag this corner to resize. Size, position, text size and opacity are kept.</li>
+    </ol>
   </section>
 
   <section class="tools">
