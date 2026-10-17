@@ -98,25 +98,26 @@
 
         <div class="mock">
           <div class="mk-head">
-            <b class="ok"><i class="pin">1</i>LISTENING</b>
-            <span class="mk-note"><i class="pin">2</i>English. Listening to Speakers (Realtek Audio).</span>
-            <span class="mk-capture"><i class="pin">3</i>hidden from capture</span>
-            <span class="mk-buttons"><i class="pin">4</i>history&ensp; answer&ensp; deeper&ensp; type&ensp; window&ensp; more&ensp; stop&ensp; ✕</span>
+            <b class="ok"><button type="button" class="pin" aria-label="What part 1 is" aria-controls="key">1</button>LISTENING</b>
+            <span class="mk-note"><button type="button" class="pin" aria-label="What part 2 is" aria-controls="key">2</button>English. Listening to Speakers (Realtek Audio).</span>
+            <span class="mk-capture"><button type="button" class="pin" aria-label="What part 3 is" aria-controls="key">3</button>hidden from capture</span>
+            <span class="mk-buttons"><button type="button" class="pin" aria-label="What part 4 is" aria-controls="key">4</button>history&ensp; answer&ensp; deeper&ensp; type&ensp; window&ensp; more&ensp; stop&ensp; ✕</span>
           </div>
           <div class="mk-body">
-            <p class="mk-q"><i class="pin">5</i>CLIENT&ensp;What would fifty drivers cost us on the annual plan?</p>
-            <p class="mk-say"><i class="pin">6</i>On the annual plan it comes to 510 dollars a month for fifty drivers, billed as 6,120 for the year.</p>
-            <p class="mk-pt"><i class="pin">7</i>The pricing page lists 12 dollars per driver per month</p>
+            <p class="mk-q"><button type="button" class="pin" aria-label="What part 5 is" aria-controls="key">5</button>CLIENT&ensp;What would fifty drivers cost us on the annual plan?</p>
+            <p class="mk-say"><button type="button" class="pin" aria-label="What part 6 is" aria-controls="key">6</button>On the annual plan it comes to 510 dollars a month for fifty drivers, billed as 6,120 for the year.</p>
+            <p class="mk-pt"><button type="button" class="pin" aria-label="What part 7 is" aria-controls="key">7</button>The pricing page lists 12 dollars per driver per month</p>
             <p class="mk-pt">Annual billing takes 15 percent off, which the same page shows</p>
-            <p class="mk-pt warn"><i class="pin">8</i>Not in brief: whether a fleet this size gets a volume discount</p>
+            <p class="mk-pt warn"><button type="button" class="pin" aria-label="What part 8 is" aria-controls="key">8</button>Not in brief: whether a fleet this size gets a volume discount</p>
           </div>
-          <div class="mk-heard"><span><i class="pin">9</i>CAPTURED&ensp;Pricing – Acme Fleet – Google Chrome&ensp; (whole page)</span></div>
-          <div class="mk-foot"><span><i class="pin">10</i>Ctrl+Alt +&ensp; A answer&ensp; D dig deeper&ensp; T type&ensp; W window&ensp; E explain more&ensp; S show/hide&ensp; L start/stop&ensp; , previous&ensp; . next</span><span class="mk-grip"><i class="pin">11</i></span></div>
+          <div class="mk-heard"><span><button type="button" class="pin" aria-label="What part 9 is" aria-controls="key">9</button>CAPTURED&ensp;Pricing – Acme Fleet – Google Chrome&ensp; (whole page)</span></div>
+          <div class="mk-foot"><span><button type="button" class="pin" aria-label="What part 10 is" aria-controls="key">10</button>Ctrl+Alt +&ensp; A answer&ensp; D dig deeper&ensp; T type&ensp; W window&ensp; E explain more&ensp; S show/hide&ensp; L start/stop&ensp; , previous&ensp; . next</span><span class="mk-grip"><button type="button" class="pin" aria-label="What part 11 is" aria-controls="key">11</button></span></div>
         </div>
       </div>
     </div>
 
-    <ol class="key">
+    <p class="key-hint">Click a number on the drawing to see what that part does.</p>
+    <ol class="key" id="key" aria-live="polite">
       <li><b>State.</b> Listening, starting, off, or an error, which then fills the window with what went wrong.</li>
       <li><b>What it is doing.</b> The devices it listens to, or "Thinking…", "Reading the window…" while an answer is on its way.</li>
       <li><b>The capture check.</b> Says the window is hidden from screen shares, and turns into a red <code class="red">VISIBLE TO SCREEN SHARE</code> if Windows would not hide it.</li>
@@ -281,6 +282,28 @@ GhostCue.bat</pre>
 <footer class="foot">
   <img src="ghost.png" alt=""> GhostCue&ensp;·&ensp;<a href="https://github.com/Blankscreen-exe/ghostcue">Source on GitHub</a>
 </footer>
+
+<script>
+  // The drawing's numbered pins: a click shows that part's line of the key, alone, and outlines the part.
+  // Without this the whole key shows, as a list.
+  (function () {
+    var pins = document.querySelectorAll(".mock .pin");
+    var lines = document.querySelectorAll(".key li");
+    if (!pins.length || pins.length !== lines.length) return;
+    document.documentElement.classList.add("pins-live");
+    lines.forEach(function (line, i) { line.dataset.n = i + 1; });  // hidden lines leave the CSS count
+    function show(chosen) {
+      pins.forEach(function (pin, i) {
+        pin.classList.toggle("on", i === chosen);
+        pin.setAttribute("aria-pressed", i === chosen ? "true" : "false");
+        pin.parentElement.classList.toggle("lit", i === chosen);
+      });
+      lines.forEach(function (line, i) { line.classList.toggle("on", i === chosen); });
+    }
+    pins.forEach(function (pin, i) { pin.addEventListener("click", function () { show(i); }); });
+    show(0);
+  })();
+</script>
 
 </body>
 </html>
