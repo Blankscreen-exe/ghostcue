@@ -215,3 +215,12 @@ bottom-right corner to resize it. It never takes keyboard focus.
 **Auto** (default): cues change at their timestamps, and Next/Previous move the
 clock with them. **Manual**: cues change only when you press Next/Previous, and
 the countdown turns red when you are behind the script's timing.
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) says
+how to report a bug, set up, check a change and send it.
+
+## License
+
+GhostCue is under the [MIT License](LICENSE).
