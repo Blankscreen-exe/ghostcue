@@ -35,10 +35,9 @@ Then double-click `GhostCue.bat`, or run `.venv\Scripts\python -m ghostcue`.
 
 ### Making a release
 
-`packaginguild.ps1` builds `dist\GhostCue\` with PyInstaller, zips it, and, if
+`packaging\build.ps1` builds `dist\GhostCue\` with PyInstaller, zips it, and, if
 [Inno Setup 6](https://jrsoftware.org/isinfo.php) is installed, makes the
-installer. It needs `packaging
-equirements.txt` installed in `.venv` as well.
+installer. It needs `packaging\requirements.txt` installed in `.venv` as well.
 Set `GHOSTCUE_CONSOLE=1` to build an exe with a console, which shows errors and
 can run `GhostCue.exe listen`.
 
