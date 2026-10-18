@@ -28,6 +28,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ; The tray app holds this mutex while it runs, so setup can ask for it to be closed first.
 AppMutex=GhostCue.Assistant
 SetupIconFile=ghostcue.ico
+; Shown as a page of the wizard. build.ps1 also puts it in the app folder, so it is installed too.
+LicenseFile=..\LICENSE
 UninstallDisplayIcon={app}\GhostCue.exe
 UninstallDisplayName=GhostCue
 WizardStyle=modern

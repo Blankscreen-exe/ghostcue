@@ -1,5 +1,5 @@
 # Builds GhostCue for release, into dist\:
-#   GhostCue\                      the app folder, with GhostCue.exe
+#   GhostCue\                      the app folder, with GhostCue.exe and LICENSE.txt
 #   GhostCue-<version>-win64.zip   that folder, zipped
 #   GhostCue-<version>-setup.exe   the installer, if Inno Setup 6 is installed
 #
@@ -15,6 +15,8 @@ Write-Host "Building GhostCue $version"
 
 & .venv\Scripts\python -m PyInstaller packaging\ghostcue.spec --noconfirm --clean --distpath dist --workpath build
 if ($LASTEXITCODE) { throw "PyInstaller failed" }
+# The license goes with every copy, in the zip and the installed folder alike.
+Copy-Item LICENSE dist\GhostCue\LICENSE.txt
 
 $zip = "dist\GhostCue-$version-win64.zip"
 if (Test-Path $zip) { Remove-Item $zip }
